@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#09090b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Last Card</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="bg-zinc-950 overscroll-none">
+  <div id="toast-wrap" aria-live="assertive"></div>
+
+  <!-- Join -->
+  <main id="screen-join" class="min-h-[100dvh] flex flex-col gap-5 p-5 max-w-md mx-auto" hidden>
+    <h1 class="text-4xl font-black tracking-tight pt-4">Last Card</h1>
+    <label class="flex flex-col gap-2">
+      <span class="text-zinc-300 font-bold">Room code (on the TV)</span>
+      <input id="in-code" class="field uppercase tracking-[.3em] text-center text-3xl" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" placeholder="ABCD">
+    </label>
+    <label class="flex flex-col gap-2">
+      <span class="text-zinc-300 font-bold">Your name</span>
+      <input id="in-name" class="field" maxlength="14" autocomplete="nickname" placeholder="e.g. Shaun">
+    </label>
+    <fieldset class="flex flex-col gap-2">
+      <legend class="text-zinc-300 font-bold mb-2">Pick your avatar</legend>
+      <div id="avatars" class="grid grid-cols-6 gap-2"></div>
+    </fieldset>
+    <p id="join-error" class="text-rose-300 font-bold min-h-[1.5em]" role="alert"></p>
+    <button id="btn-join" class="btn btn-go w-full text-xl mt-auto">Join game</button>
+  </main>
+
+  <!-- Waiting room -->
+  <main id="screen-wait" class="min-h-[100dvh] flex flex-col gap-5 p-5 max-w-md mx-auto" hidden>
+    <header class="flex items-center gap-3 pt-2">
+      <span id="w-avatar" class="text-5xl"></span>
+      <div>
+        <p id="w-name" class="text-2xl font-black"></p>
+        <p class="text-zinc-400 font-semibold">Room <span id="w-code"></span></p>
+      </div>
+    </header>
+    <p id="w-message" class="text-2xl font-bold leading-snug">You're in. Watch the TV.</p>
+    <ul id="w-players" class="flex flex-col gap-2"></ul>
+    <div class="mt-auto flex flex-col gap-3">
+      <button id="btn-start" class="btn btn-go w-full text-xl" hidden>Deal the cards</button>
+      <button class="btn btn-ghost w-full" data-leave>Leave game</button>
+    </div>
+  </main>
+
+  <!-- Playing -->
+  <main id="screen-play" class="h-[100dvh] flex flex-col max-w-xl mx-auto" hidden>
+    <header class="flex items-center gap-3 px-4 pt-3">
+      <span id="p-avatar" class="text-3xl"></span>
+      <p id="p-name" class="font-black text-lg flex-1 truncate"></p>
+      <p id="p-count" class="text-zinc-300 font-bold"></p>
+      <button class="btn btn-ghost px-4 text-base" data-leave aria-label="Leave game">Leave</button>
+    </header>
+
+    <div class="px-4 pt-3">
+      <p id="p-turn" class="ph-turn is-theirs"></p>
+    </div>
+
+    <section class="flex items-center gap-4 px-4 pt-4" aria-label="Table">
+      <div id="p-top" class="ph-mini"></div>
+      <div class="flex-1 min-w-0">
+        <p class="text-zinc-400 font-semibold text-sm">Colour to match</p>
+        <p id="p-color" class="text-2xl font-black"></p>
+        <ul id="p-others" class="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-zinc-300 font-semibold text-sm"></ul>
+      </div>
+    </section>
+
+    <div class="flex-1"></div>
+
+    <section class="grid grid-cols-2 gap-3 px-4" aria-label="Actions">
+      <button id="btn-draw" class="ph-draw btn-accent" disabled>Draw card</button>
+      <button id="btn-shout" class="ph-shout">LAST CARD!</button>
+    </section>
+
+    <section id="p-hand" class="ph-hand" aria-label="Your cards"></section>
+  </main>
+
+  <!-- Wild colour picker -->
+  <div id="modal-wild" class="fixed inset-0 z-50 bg-zinc-950/90 flex flex-col justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))]" role="dialog" aria-modal="true" aria-labelledby="wild-title" hidden>
+    <div class="bg-zinc-900 rounded-3xl p-4 flex flex-col gap-3 max-w-xl w-full mx-auto">
+      <h2 id="wild-title" class="text-2xl font-black text-center">Choose the next colour</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <button class="ph-swatch" style="background:var(--red)" data-color="red"><span aria-hidden="true">●</span>Red</button>
+        <button class="ph-swatch" style="background:var(--yellow);color:#18181b" data-color="yellow"><span aria-hidden="true">★</span>Yellow</button>
+        <button class="ph-swatch" style="background:var(--green)" data-color="green"><span aria-hidden="true">▲</span>Green</button>
+        <button class="ph-swatch" style="background:var(--blue)" data-color="blue"><span aria-hidden="true">■</span>Blue</button>
+      </div>
+      <button id="btn-wild-cancel" class="btn btn-ghost w-full">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Round over -->
+  <div id="modal-end" class="fixed inset-0 z-40 bg-zinc-950/90 flex flex-col items-center justify-center gap-4 p-6 text-center" hidden>
+    <p id="e-avatar" class="text-8xl" style="animation: pop-in .4s ease-out both"></p>
+    <h2 id="e-title" class="text-4xl font-black"></h2>
+    <p id="e-sub" class="text-xl text-zinc-300 font-semibold"></p>
+    <button id="btn-again" class="btn btn-go w-full max-w-sm text-xl" hidden>Deal next round</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/cards.js"></script>
+  <script src="/js/phone.js"></script>
+</body>
+</html>

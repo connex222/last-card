@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Last Card — TV</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="tv overflow-hidden">
+
+  <!-- Connecting -->
+  <section id="screen-connecting" class="h-screen flex items-center justify-center">
+    <p class="text-[1.6em] font-bold text-zinc-400">Setting up the table…</p>
+  </section>
+
+  <!-- Lobby -->
+  <section id="screen-lobby" class="tv-felt h-screen flex flex-col p-[2.2em] gap-[1.6em]" hidden>
+    <header class="flex items-baseline justify-between">
+      <h1 class="tv-title">Last Card</h1>
+      <p class="text-[1.1em] text-zinc-300 font-semibold">Match the colour or the number. First to empty their hand wins.</p>
+    </header>
+
+    <div class="flex-1 grid grid-cols-[auto_1fr] gap-[3em] items-center">
+      <div class="flex flex-col items-center gap-[.8em]">
+        <div id="qr" class="tv-qr" role="img" aria-label="QR code to join"></div>
+        <p class="text-[1.3em] font-bold">Scan with your phone camera</p>
+      </div>
+
+      <div class="flex flex-col gap-[1.2em]">
+        <div>
+          <p class="text-[1.4em] font-bold text-zinc-300">Room code</p>
+          <p id="lobby-code" class="tv-code">····</p>
+        </div>
+        <p id="lobby-url" class="text-[1.3em] text-zinc-300 font-semibold"></p>
+        <p id="lobby-net-warning" class="text-[1.2em] font-bold text-rose-300" hidden>
+          This computer isn't connected to Wi-Fi, so phones can't reach it. Connect to Wi-Fi, then restart the game.
+        </p>
+        <div>
+          <p class="text-[1.3em] font-bold mb-[.5em]"><span id="lobby-count">0</span> players at the table</p>
+          <ul id="lobby-players" class="flex flex-wrap gap-[.7em]"></ul>
+          <p id="lobby-empty" class="text-[1.2em] text-zinc-400">Waiting for the first player…</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="flex items-center gap-[1.2em]">
+      <button id="btn-start" class="btn btn-go text-[1.4em] px-[1.6em]" disabled>Deal the cards</button>
+      <p id="lobby-hint" class="text-[1.15em] text-zinc-300 font-semibold">You need at least 2 players.</p>
+    </footer>
+  </section>
+
+  <!-- Table -->
+  <section id="screen-table" class="tv-felt h-screen flex flex-col p-[1.6em]" hidden>
+    <header class="flex items-center justify-between">
+      <h1 class="tv-title" style="font-size:1.6em">Last Card</h1>
+      <p class="text-[1.15em] font-bold text-zinc-200">Round <span id="t-round">1</span></p>
+      <p class="text-[1.15em] font-bold text-zinc-200">Late? Join with code <span id="t-code" class="text-white text-[1.3em] tracking-widest"></span></p>
+    </header>
+
+    <div class="flex-1 relative flex items-center justify-center">
+      <svg id="t-ring" class="tv-ring tv-pile cw" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <marker id="arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0 0 10 5 0 10z" fill="#fff"/>
+          </marker>
+        </defs>
+        <path id="ring-arc-1" d="M100 12 A88 88 0 0 1 188 100" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" marker-end="url(#arrowhead)"/>
+        <path id="ring-arc-2" d="M100 188 A88 88 0 0 1 12 100" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" marker-end="url(#arrowhead)"/>
+      </svg>
+
+      <div class="tv-pile relative flex items-center gap-[3em]">
+        <div class="flex flex-col items-center gap-[.6em]">
+          <div class="tv-pile-box" id="t-deck"></div>
+          <p class="text-[1.1em] font-bold text-zinc-200"><span id="t-deck-count">0</span> to draw</p>
+        </div>
+        <div class="flex flex-col items-center gap-[.6em]">
+          <div class="tv-pile-box" id="t-discard"></div>
+          <p id="t-color" class="tv-color-chip">Red</p>
+        </div>
+      </div>
+
+      <div id="t-flash-wrap" class="fixed inset-x-0 top-[.8em] z-20 flex justify-center pointer-events-none" aria-live="assertive"></div>
+    </div>
+
+    <p id="t-log" class="tv-log text-center mb-[.8em]" aria-live="polite"></p>
+    <p id="t-direction" class="text-center text-[1em] font-bold text-zinc-300 mb-[.6em]"></p>
+    <ul id="t-players" class="flex flex-wrap justify-center items-center gap-[.6em]"></ul>
+  </section>
+
+  <!-- Winner overlay -->
+  <section id="screen-winner" class="fixed inset-0 z-30 flex flex-col items-center justify-center gap-[1.2em] bg-zinc-950/85" hidden>
+    <canvas id="confetti" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+    <p id="w-avatar" class="relative text-[7em] leading-none" style="animation: pop-in .4s ease-out both"></p>
+    <h2 id="w-title" class="relative tv-code" style="font-size:clamp(48px,7vw,180px);letter-spacing:-.02em;text-align:center"></h2>
+    <ul id="w-scores" class="relative flex flex-wrap justify-center gap-[.7em] max-w-[80vw]"></ul>
+    <div class="relative flex gap-[1em] mt-[.6em]">
+      <button id="btn-again" class="btn btn-go text-[1.3em] px-[1.6em]">Deal next round</button>
+      <button id="btn-lobby" class="btn btn-ghost text-[1.3em] px-[1.6em]">Back to lobby</button>
+    </div>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/cards.js"></script>
+  <script src="/js/tv.js"></script>
+</body>
+</html>
