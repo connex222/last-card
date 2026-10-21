@@ -4,14 +4,15 @@
   const { renderCard, sortHand, escapeHtml, COLOR_NAME, COLOR_MARK, COLOR_HEX, COLOR_SOFT, isLight } = window.LC;
   const $ = (id) => document.getElementById(id);
   const SESSION_KEY = 'lastcard:player';
-  const AVATARS = ['🦊', '🐼', '🐸', '🦁', '🐙', '🦉', '🐯', '🐨', '🐵', '🦄', '🐲', '🐧', '🐝', '🦖', '🐢', '🦋'];
+  const AvatarLib = window.LastCardAvatars;
+  const AVATARS = AvatarLib.ids.slice();
   const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const buzz = (p) => { if (navigator.vibrate) navigator.vibrate(p); };
 
   const socket = io({ transports: ['websocket', 'polling'] });
   let state = null;
   let session = loadSession();
-  let chosenAvatar = (session && session.avatar) || AVATARS[(Math.random() * AVATARS.length) | 0];
+  let chosenAvatar = AvatarLib.isValid(session && session.avatar) ? session.avatar : AVATARS[(Math.random() * AVATARS.length) | 0];
   let busy = false;
   let wildCardId = null;
   let swapCardId = null;
@@ -72,20 +73,37 @@
   }
 
   function renderAvatars() {
-    $('avatars').innerHTML = AVATARS.map((a) => `<button type="button" class="ph-avatar" data-avatar="${a}" aria-pressed="${a === chosenAvatar}" aria-label="Avatar ${a}">${a}</button>`).join('');
+    $('avatars').innerHTML = AVATARS.map((a) => {
+      const def = AvatarLib.find(a);
+      return `<button type="button" class="ph-avatar" data-avatar="${a}" data-avatar-id="${a}" aria-pressed="${a === chosenAvatar}" aria-label="Choose avatar ${escapeHtml(def.name)}" title="${escapeHtml(def.name)}"></button>`;
+    }).join('');
   }
 
   // ---------- connection ----------
   function join(payload) {
+    if (!socket.connected) return;
     $('btn-join').disabled = true;
-    socket.emit('player:join', payload, (res) => {
+    socket.timeout(8000).emit('player:join', payload, (err, res) => {
       $('btn-join').disabled = false;
-      if (!res || !res.ok) {
-        if (payload.playerId) clearSession();
-        showJoin(res && res.error);
+      if (err) {
+        toast('The server is not responding. Retrying when connected.', 'info', 3200);
         return;
       }
-      saveSession({ code: res.code, playerId: res.playerId, name: payload.name || (session && session.name), avatar: payload.avatar || chosenAvatar });
+      if (!res || !res.ok) {
+        // Keep valid seat credentials on transient errors. Clear them only when
+        // the server explicitly rejects the session or the room no longer exists.
+        const reason = (res && res.error) || 'Could not join the table.';
+        const invalid = /credentials expired|no game with that code/i.test(reason);
+        if (payload.playerId && invalid) {
+          clearSession();
+          chosenAvatar = AvatarLib.isValid(session && session.avatar) ? session.avatar : chosenAvatar;
+        }
+        showJoin(reason);
+        return;
+      }
+      hideToast();
+      saveSession({ code: res.code, playerId: res.playerId, resumeToken: res.resumeToken,
+        name: payload.name || (session && session.name), avatar: payload.avatar || (session && session.avatar) || chosenAvatar });
       if (location.pathname !== '/join') history.replaceState(null, '', '/join');
     });
   }
@@ -93,18 +111,19 @@
   socket.on('connect', () => {
     const urlCode = codeFromUrl();
     if (session && session.playerId && session.code && (!urlCode || urlCode === session.code)) {
-      join({ code: session.code, playerId: session.playerId });
+      join({ code: session.code, playerId: session.playerId, resumeToken: session.resumeToken });
     } else if (!state) {
       showJoin();
     }
   });
 
-  socket.on('disconnect', () => toast('Reconnecting…', 'info', 60000));
+  socket.on('disconnect', () => { busy = false; toast('Connection lost — reconnecting…', 'info', 60000); });
   socket.on('removed', () => { clearSession(); state = null; showJoin('You were removed from the game.'); });
 
   socket.on('update-player', (s) => {
     const first = !state;
     state = s;
+    hideToast();
     if (first) { lastFlashId = s.flash ? s.flash.id : null; knownIds = new Set(s.hand.map((c) => c.id)); hideToast(); }
     render();
   });
@@ -303,7 +322,7 @@
         card.id === state.pendingDrawnId ? 'is-drawn' : '',
         knownIds.has(card.id) ? '' : 'lc-new',
       ].join(' ');
-      return renderCard(card, { tag: 'button', extraClass: cls, attrs: 'type="button"' });
+      return renderCard(card, { tag: 'button', extraClass: cls, attrs: `type="button" aria-disabled="${!playable.has(card.id)}" aria-label="${escapeHtml(card.color)} ${escapeHtml(card.value)} card${playable.has(card.id) ? ', playable' : ', not playable'}"` });
     }).join('');
     const fresh = hand.find((c) => !knownIds.has(c.id));
     knownIds = new Set(hand.map((x) => x.id));
@@ -354,6 +373,20 @@
     }
   }
   let curveQueued = false;
+  // Recalculate positions when the phone rotates or its viewport changes.
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(() => { if (state && state.inRound) layoutHand(); }).observe($('p-hand'));
+  } else {
+    window.addEventListener('resize', () => { if (state && state.inRound) layoutHand(); });
+  }
+  $('p-hand').addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const cards = [...$('p-track').querySelectorAll('button.lc-card')];
+    const index = cards.indexOf(document.activeElement);
+    if (index < 0 || !cards.length) return;
+    const next = cards[Math.max(0, Math.min(cards.length - 1, index + (e.key === 'ArrowRight' ? 1 : -1)))];
+    if (next !== document.activeElement) { e.preventDefault(); next.focus(); next.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  });
   $('p-hand').addEventListener('scroll', () => {
     if (curveQueued) return;
     curveQueued = true;
@@ -401,7 +434,7 @@
       }
       $('e-sub').textContent = `${extra} ${$('e-sub').textContent}`.trim();
     }
-    if (w && (w.isMe || (wt && state.winnerTeam === state.myTeam)) && $('modal-end').dataset.round !== String(state.round)) buzz([100, 60, 100, 60, 200]);
+    if (w && (w.isMe || (wt && state.winnerTeam === state.myTeam)) && $('modal-end').dataset.round !== String(state.round)) { buzz([100, 60, 100, 60, 200]); window.dispatchEvent(new Event('lastcard:win')); }
     $('modal-end').dataset.round = String(state.round);
   }
 
@@ -477,9 +510,9 @@
   }
 
   // ---------- feedback ----------
-  function toast(text, tone = 'info', ms = 2200) {
+  function toast(text, tone = 'info', ms = 2200, isHtml = false) {
     clearTimeout(toastTimer);
-    $('toast-wrap').innerHTML = `<p class="ph-toast tone-${tone}">${escapeHtml(text)}</p>`;
+    $('toast-wrap').innerHTML = `<p class="ph-toast tone-${tone}">${isHtml ? text : escapeHtml(text)}</p>`;
     toastTimer = setTimeout(hideToast, ms);
   }
   function hideToast() { clearTimeout(toastTimer); $('toast-wrap').innerHTML = ''; }
@@ -657,7 +690,7 @@
       btn.disabled = false;
       if (!res || !res.ok) { $('solo-error').textContent = (res && res.error) || 'Could not start. Try again.'; return; }
       $('modal-solo').hidden = true;
-      saveSession({ code: res.code, playerId: res.playerId, name, avatar: chosenAvatar });
+      saveSession({ code: res.code, playerId: res.playerId, resumeToken: res.resumeToken, name, avatar: chosenAvatar });
       if (location.pathname !== '/join') history.replaceState(null, '', '/join');
     });
   });
@@ -720,7 +753,8 @@
     sendSignal(b.dataset.signal);
   });
   socket.on('signal', (sig) => {
-    toast(`${sig.avatar} ${sig.from}: ${sig.text}`, 'info', 3200);
+    const avatar = AvatarLib.find(sig.avatar);
+    toast(`<span class="ph-toast-row"><span class="av" data-avatar-id="${escapeHtml(avatar.id)}">${escapeHtml(avatar.id)}</span><strong>${escapeHtml(sig.from)}:</strong><span>${escapeHtml(sig.text)}</span></span>`, 'info', 3200, true);
     const t = document.querySelector('#toast-wrap .ph-toast');
     if (t) { t.style.borderColor = 'var(--team)'; t.style.boxShadow = '0 0 0 2px var(--team), 0 10px 28px rgba(0,0,0,.55)'; }
     buzz([30, 40, 30]);

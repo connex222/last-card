@@ -415,9 +415,10 @@ const emit = (s, ev, data) => new Promise((res) => s.emit(ev, data, res));
     const s = io(URL, { transports: ['websocket'] });
     const bot = { s, name, state: null };
     s.on('update-player', (st) => { bot.state = st; });
-    const r = await emit(s, 'player:join', { code: created.code.toLowerCase(), name, avatar: '🐼' });
+    const r = await emit(s, 'player:join', { code: created.code.toLowerCase(), name, avatar: 'chibi' });
     assert.ok(r.ok, r.error);
     bot.id = r.playerId;
+    bot.resumeToken = r.resumeToken;
     bots.push(bot);
   }
   const dup = await emit(io(URL, { transports: ['websocket'] }), 'player:join', { code: created.code, name: 'ann' });
@@ -450,7 +451,7 @@ const emit = (s, ev, data) => new Promise((res) => s.emit(ev, data, res));
   // reconnect keeps the seat
   bots[1].s.disconnect();
   const again = io(URL, { transports: ['websocket'] });
-  const rj = await emit(again, 'player:join', { code: created.code, playerId: bots[1].id });
+  const rj = await emit(again, 'player:join', { code: created.code, playerId: bots[1].id, resumeToken: bots[1].resumeToken });
   assert.ok(rj.ok && rj.playerId === bots[1].id, 'rejoin keeps the same seat');
   console.log('server: reconnect keeps the same player');
 
@@ -479,7 +480,7 @@ const emit = (s, ev, data) => new Promise((res) => s.emit(ev, data, res));
   assert.strictEqual(tv2State.botCount, 2);
   assert.strictEqual(tv2State.botLevel, 'hard');
   const solo1 = io(URL, { transports: ['websocket'] });
-  assert.ok((await emit(solo1, 'player:join', { code: tv2State.code, name: 'Solo', avatar: '🦊' })).ok);
+  assert.ok((await emit(solo1, 'player:join', { code: tv2State.code, name: 'Solo', avatar: 'akari' })).ok);
   const solo2 = io(URL, { transports: ['websocket'] });
   assert.ok(!(await emit(solo2, 'player:join', { code: tv2State.code, name: 'Second' })).ok, 'Solo refuses a second person');
   assert.ok((await emit(tv2, 'tv:start', {})).ok, 'Solo deals with one person and two computer players');
@@ -691,7 +692,7 @@ const emit = (s, ev, data) => new Promise((res) => s.emit(ev, data, res));
   const ph = io(URL, { transports: ['websocket'] });
   let phState = null;
   ph.on('update-player', (st) => { phState = st; });
-  const sc = await emit(ph, 'solo:create', { name: 'Shaun', avatar: '🦊', bots: 3, level: 'easy' });
+  const sc = await emit(ph, 'solo:create', { name: 'Shaun', avatar: 'akari', bots: 3, level: 'easy' });
   assert.ok(sc.ok, sc.error);
   let myMoves = 0;
   const deadline = Date.now() + 60000;

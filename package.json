@@ -1,12 +1,14 @@
 {
   "name": "last-card",
   "version": "2.0.0",
-  "description": "Last Card — TV-hosted, phone-controlled colour-matching card game",
+  "description": "Last Card \u2014 TV-hosted, phone-controlled colour-matching card game",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "build:css": "tailwindcss -c tailwind.config.js -i src/input.css -o public/css/app.css --minify",
-    "test": "node test/simulate.js"
+    "test": "node test/persistence.js && node test/avatar-ui.js && node test/simulate.js",
+    "test:ui": "node test/avatar-ui.js",
+    "test:persistence": "node test/persistence.js"
   },
   "dependencies": {
     "express": "^4.21.2",

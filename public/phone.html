@@ -9,6 +9,8 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
   <link rel="preload" href="/fonts/bodoni-moda-latin-900-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/app.css">
+  <script src="/js/avatars.js"></script>
+  <script defer src="/js/experience.js"></script>
 </head>
 <body class="lounge ph overscroll-none">
   <div id="toast-wrap" aria-live="assertive"></div>
@@ -28,7 +30,7 @@
     </label>
     <fieldset class="flex flex-col gap-2">
       <legend class="ph-label mb-2">Pick your avatar</legend>
-      <div id="avatars" class="grid grid-cols-6 gap-2"></div>
+      <div id="avatars" class="grid grid-cols-4 gap-3"></div>
     </fieldset>
     <p id="join-error" class="font-bold min-h-[1.5em]" style="color:#ff9aa8" role="alert"></p>
     <div class="mt-auto flex flex-col gap-3">

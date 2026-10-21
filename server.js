@@ -23,6 +23,7 @@ const QRCode = require('qrcode');
 const { LastCardGame, COLORS, ALL_COLORS, face } = require('./game/lastcard');
 const { MODES, BOT_LEVELS, TEAMS, SIGNALS, MATCH_TYPES, MATCH_TARGET, getMode } = require('./game/modes');
 const { BOTS, decide, thinkTime, decideFrenzy, reactTime } = require('./game/bots');
+const { createStore } = require('./game/persistence');
 
 const PORT = Number(process.env.PORT) || 3000;
 const MIN_PLAYERS = 2;
@@ -36,7 +37,7 @@ const FUSE_MIN_MS = 20000 * HOT_SPEED;
 const FUSE_MAX_MS = 60000 * HOT_SPEED;
 const TURN_MS = 5000 * HOT_SPEED;
 const STALL_MS = 7000 * HOT_SPEED; // Frenzy: if nobody plays for this long, a card comes off the deck
-const AVATARS = ['🦊', '🐼', '🐸', '🦁', '🐙', '🦉', '🐯', '🐨', '🐵', '🦄', '🐲', '🐧', '🐝', '🦖', '🐢', '🦋'];
+const AVATARS = ['akari', 'blaze', 'chibi', 'dusk', 'ember', 'frost', 'glimmer', 'halo', 'iris', 'jinx', 'kitsu', 'luna', 'nova', 'onyx', 'pixel', 'sora'];
 const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I or O
 
 // ---------- network address shown in the QR code ----------
@@ -81,6 +82,9 @@ function publicBase(handshake) {
 // ---------- rooms ----------
 /** @type {Map<string, Room>} */
 const rooms = new Map();
+// Opt-in durable single-host storage. Set STATE_DIR to a persistent disk mount.
+const roomStore = createStore(process.env.STATE_DIR);
+const saveRooms = () => roomStore?.save(rooms);
 
 function newCode() {
   let code;
@@ -582,6 +586,7 @@ class Room {
     this.scheduleAwaySkip();
     this.scheduleBot();
     this.scheduleFrenzy();
+    saveRooms();
   }
 
   /** If it's a disconnected player's turn, skip it after a short wait so the table never stalls. */
@@ -617,7 +622,10 @@ const PUBLIC = path.join(__dirname, 'public');
 
 app.disable('x-powered-by');
 app.use(express.static(PUBLIC, { extensions: ['html'] }));
-app.get('/healthz', (_req, res) => res.type('text').send('ok'));
+app.get('/healthz', (_req, res) => {
+  if (roomStore && !roomStore.status().healthy) return res.status(503).type('text').send('snapshot write failed');
+  res.type('text').send('ok');
+});
 app.get('/j/:code', (_req, res) => res.sendFile(path.join(PUBLIC, 'phone.html')));
 app.get('/join', (_req, res) => res.sendFile(path.join(PUBLIC, 'phone.html')));
 
@@ -708,7 +716,7 @@ io.on('connection', (socket) => {
     const r = await new Room(io, publicBase(socket.handshake)).init();
     rooms.set(r.code, r);
     r.tvless = true;
-    const p = { id: token(), name: n, avatar: AVATARS.includes(avatar) ? avatar : AVATARS[0], socketId: socket.id, connected: true, wins: 0 };
+    const p = { id: token(), name: n, avatar: AVATARS.includes(avatar) ? avatar : AVATARS[0], socketId: socket.id, connected: true, wins: 0, resumeToken: token() };
     r.players.push(p);
     r.setMode('solo');
     r.setBots(bots === undefined ? 3 : bots, BOT_LEVELS.includes(level) ? level : 'medium');
@@ -717,16 +725,22 @@ io.on('connection', (socket) => {
     room = r;
     playerId = p.id;
     socket.join(r.code);
-    reply(ack, { ok: true, playerId: p.id, code: r.code });
+    reply(ack, { ok: true, playerId: p.id, resumeToken: p.resumeToken, code: r.code });
     r.broadcast();
   });
 
   // ----- phones -----
-  socket.on('player:join', ({ code, name, avatar, playerId: resumeId } = {}, ack) => {
+  socket.on('player:join', ({ code, name, avatar, playerId: resumeId, resumeToken } = {}, ack) => {
     const r = findRoom(code);
     if (!r) return reply(ack, { ok: false, error: 'No game with that code. Check the code on the TV.' });
+    // One socket must not control seats in multiple rooms, nor claim a second seat.
+    // A normal reconnection uses a new socket and its private resume token.
+    if (room && (room !== r || (playerId && playerId !== resumeId))) {
+      return reply(ack, { ok: false, error: 'Leave your current table before joining another.' });
+    }
 
     let p = resumeId && r.player(resumeId);
+    if (p && p.resumeToken && resumeToken !== p.resumeToken) return reply(ack, { ok: false, error: 'Session credentials expired. Rejoin the table.' });
     if (p) {
       // Reconnecting phone: take over the seat.
       if (p.socketId && p.socketId !== socket.id) {
@@ -740,7 +754,7 @@ io.on('connection', (socket) => {
       if (getMode(r.mode).solo && r.humans.length >= 1) return reply(ack, { ok: false, error: 'This table is set up for Solo. Ask the host to switch to Classic.' });
       if (r.players.length >= MAX_PLAYERS) return reply(ack, { ok: false, error: `This table is full (${MAX_PLAYERS} players).` });
       if (r.players.some((x) => x.name.toLowerCase() === n.toLowerCase())) return reply(ack, { ok: false, error: `Someone is already called ${n}. Pick another name.` });
-      p = { id: token(), name: n, avatar: AVATARS.includes(avatar) ? avatar : AVATARS[0], socketId: null, connected: false, wins: 0 };
+      p = { id: token(), name: n, avatar: AVATARS.includes(avatar) ? avatar : AVATARS[0], socketId: null, connected: false, wins: 0, resumeToken: token() };
       r.players.push(p);
     }
     p.socketId = socket.id;
@@ -748,7 +762,7 @@ io.on('connection', (socket) => {
     room = r;
     playerId = p.id;
     socket.join(r.code);
-    reply(ack, { ok: true, playerId: p.id, code: r.code, waiting: r.phase === 'playing' && !(r.game && r.game.has(p.id)) });
+    reply(ack, { ok: true, playerId: p.id, resumeToken: p.resumeToken, code: r.code, waiting: r.phase === 'playing' && !(r.game && r.game.has(p.id)) });
     r.broadcast();
   });
 
@@ -847,6 +861,7 @@ setInterval(() => {
       r.clearHot();
       r.clearFrenzy();
       rooms.delete(code);
+      saveRooms();
     } else if (anyone) {
       r.touched = now;
     }
@@ -864,6 +879,30 @@ server.on('error', (err) => {
 
 const HOSTED = !!(process.env.RENDER || process.env.PUBLIC_URL || process.env.RAILWAY_ENVIRONMENT || process.env.FLY_APP_NAME);
 
+// Restore only validated room state. All sockets/timers belong to the old process.
+if (roomStore) {
+  for (const data of roomStore.load()) {
+    try {
+      const r = new Room(io, null);
+      Object.assign(r, data);
+      r.players = data.players.map((p) => ({ ...p, connected: !!p.isBot, socketId: null }));
+      if (data.game) {
+        const g = Object.create(LastCardGame.prototype);
+        Object.assign(g, data.game);
+        r.game = g;
+      }
+      // A lit fuse cannot safely resume its secret deadline across process restarts.
+      if (r.game?.fuse?.lit) r.game.fuse.seq += 1;
+      r.qrSvg = '';
+      r.touched = Date.now(); // Give reconnecting clients the normal idle grace period.
+      rooms.set(r.code, r);
+    } catch (err) { console.error('[persistence] skipped room:', err.message); }
+  }
+  for (const r of rooms.values()) r.init().catch((err) => console.error('[persistence] QR restoration failed:', err.message));
+  console.log(`[persistence] Restored ${rooms.size} room(s)`);
+}
+process.on('SIGTERM', () => { roomStore?.flush(); server.close(() => process.exit(0)); });
+process.on('SIGINT', () => { roomStore?.flush(); server.close(() => process.exit(0)); });
 server.listen(PORT, '0.0.0.0', () => {
   if (HOSTED) {
     console.log(`Last Card is running online on port ${PORT}. Open your website address + /tv.html on the TV.`);
