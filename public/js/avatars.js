@@ -5,22 +5,22 @@
   'use strict';
 
   const defs = [
-    { id: 'akari', name: 'Akari', bg1: '#ffd5e9', bg2: '#ff7ca3', skin: '#f3c8a8', hair: '#5c2f7a', eye: '#4f2f68', shirt: '#7f5cff', style: 'twin', accessory: 'star', mouth: 'smile' },
-    { id: 'blaze', name: 'Blaze', bg1: '#ffe3c2', bg2: '#ff8a3d', skin: '#e8bc96', hair: '#1a2238', eye: '#4f2a17', shirt: '#f04f6f', style: 'spike', accessory: 'scarf', mouth: 'grin' },
-    { id: 'chibi', name: 'Chibi', bg1: '#d7f3ff', bg2: '#54b6ff', skin: '#f7d4b7', hair: '#245ea8', eye: '#234b7a', shirt: '#ffffff', style: 'bob', accessory: 'clip', mouth: 'smile' },
-    { id: 'dusk', name: 'Dusk', bg1: '#e6d4ff', bg2: '#6f54d9', skin: '#d6a07f', hair: '#291942', eye: '#3e2458', shirt: '#2e365f', style: 'long', accessory: 'moon', mouth: 'calm' },
-    { id: 'ember', name: 'Ember', bg1: '#ffe2bd', bg2: '#ff5b5b', skin: '#f1bf9d', hair: '#ce4b2c', eye: '#6a1e1e', shirt: '#6c2041', style: 'wavy', accessory: 'flower', mouth: 'grin' },
-    { id: 'frost', name: 'Frost', bg1: '#d8f6ff', bg2: '#85caff', skin: '#f0d2c0', hair: '#dff5ff', eye: '#39668b', shirt: '#4aa0d5', style: 'pixie', accessory: 'snow', mouth: 'smile' },
-    { id: 'glimmer', name: 'Glimmer', bg1: '#fff1b8', bg2: '#f1bf3a', skin: '#efc6a8', hair: '#3d2e7f', eye: '#5b3b2f', shirt: '#f6f0ff', style: 'bun', accessory: 'crown', mouth: 'smile' },
-    { id: 'halo', name: 'Halo', bg1: '#d9ffef', bg2: '#40d18d', skin: '#f4cfb0', hair: '#9070ff', eye: '#3d3d72', shirt: '#ffffff', style: 'short', accessory: 'halo', mouth: 'calm' },
-    { id: 'iris', name: 'Iris', bg1: '#ffdce6', bg2: '#ff7fb1', skin: '#f2c3a5', hair: '#1f3b86', eye: '#2e3567', shirt: '#1b5dc7', style: 'ponytail', accessory: 'gem', mouth: 'smile' },
-    { id: 'jinx', name: 'Jinx', bg1: '#e4dbff', bg2: '#8a6dff', skin: '#f3caa5', hair: '#222831', eye: '#00b1d8', shirt: '#00b1d8', style: 'sharp', accessory: 'headset', mouth: 'grin' },
-    { id: 'kitsu', name: 'Kitsu', bg1: '#ffe2c6', bg2: '#ff9454', skin: '#efbf97', hair: '#7c3a1e', eye: '#60311f', shirt: '#1f7d67', style: 'messy', accessory: 'ears', mouth: 'smile' },
-    { id: 'luna', name: 'Luna', bg1: '#dfd9ff', bg2: '#5b64e9', skin: '#f6d3b6', hair: '#161a59', eye: '#2f296b', shirt: '#ffffff', style: 'braid', accessory: 'spark', mouth: 'calm' },
-    { id: 'nova', name: 'Nova', bg1: '#fff0d4', bg2: '#ffbb52', skin: '#dca67f', hair: '#faeeff', eye: '#60483f', shirt: '#a648ff', style: 'round', accessory: 'visor', mouth: 'grin' },
-    { id: 'onyx', name: 'Onyx', bg1: '#d6e8ff', bg2: '#3f66a6', skin: '#d7a47d', hair: '#0d1529', eye: '#24304f', shirt: '#d0b278', style: 'spike2', accessory: 'badge', mouth: 'calm' },
-    { id: 'pixel', name: 'Pixel', bg1: '#dbfff0', bg2: '#34caab', skin: '#f1c7a3', hair: '#ff5b80', eye: '#46324f', shirt: '#2b3258', style: 'sidecut', accessory: 'clip2', mouth: 'smile' },
-    { id: 'sora', name: 'Sora', bg1: '#e2f0ff', bg2: '#7b9bff', skin: '#e9bc98', hair: '#4b3628', eye: '#4b3628', shirt: '#ff725e', style: 'soft', accessory: 'ribbon', mouth: 'smile' },
+    { id: 'akari', name: 'Ace', image: '/assets/avatars/ace.webp' },
+    { id: 'blaze', name: 'Blaze', image: '/assets/avatars/blaze.webp' },
+    { id: 'chibi', name: 'Sunny', image: '/assets/avatars/sunny.webp' },
+    { id: 'dusk', name: 'Atlas', image: '/assets/avatars/atlas.webp' },
+    { id: 'ember', name: 'Velvet', image: '/assets/avatars/velvet.webp' },
+    { id: 'frost', name: 'Cipher', image: '/assets/avatars/cipher.webp' },
+    { id: 'glimmer', name: 'Zara', image: '/assets/avatars/zara.webp' },
+    { id: 'halo', name: 'Bingo', image: '/assets/avatars/bingo.webp' },
+    { id: 'iris', name: 'Willow', image: '/assets/avatars/willow.webp' },
+    { id: 'jinx', name: 'Jinx', image: '/assets/avatars/jinx.webp' },
+    { id: 'kitsu', name: 'Riff', image: '/assets/avatars/riff.webp' },
+    { id: 'luna', name: 'Luna', image: '/assets/avatars/luna.webp' },
+    { id: 'nova', name: 'Dash', image: '/assets/avatars/dash.webp' },
+    { id: 'onyx', name: 'Mirage', image: '/assets/avatars/mirage.webp' },
+    { id: 'pixel', name: 'Pixel', image: '/assets/avatars/pixel.webp' },
+    { id: 'sora', name: 'Maple', image: '/assets/avatars/maple.webp' },
   ];
 
   const byId = Object.fromEntries(defs.map((d) => [d.id, d]));
@@ -86,7 +86,8 @@
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="${esc(def.name)} avatar"><defs><linearGradient id="g-${def.id}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${def.bg1}"/><stop offset="1" stop-color="${def.bg2}"/></linearGradient><linearGradient id="s-${def.id}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffffff" stop-opacity=".28"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect width="96" height="96" rx="28" fill="url(#g-${def.id})"/><rect x="3" y="3" width="90" height="90" rx="25" fill="none" stroke="#ffffff" stroke-opacity=".26"/><path d="M17 89c5-16 18-25 31-25s26 9 31 25Z" fill="${def.shirt}"/><path d="M42 59h12v10c0 3-3 5-6 5s-6-2-6-5Z" fill="${def.skin}" opacity=".96"/>${hairPath(def.style, def.hair)}<circle cx="48" cy="42" r="18" fill="${def.skin}"/><ellipse cx="48" cy="73" rx="14" ry="8" fill="#000" opacity=".08"/>${hairPath(def.style, def.hair).replace(/\/>$/, ' opacity=".07"/>')}<path d="M31 44c2-15 10-24 23-24 11 0 20 7 23 24-4-5-13-9-23-9-10 0-18 3-23 9Z" fill="${def.hair}" opacity=".88"/><ellipse cx="41" cy="45" rx="3.2" ry="4" fill="${def.eye}"/><ellipse cx="55" cy="45" rx="3.2" ry="4" fill="${def.eye}"/><circle cx="42" cy="44" r="1" fill="#fff" opacity=".95"/><circle cx="56" cy="44" r="1" fill="#fff" opacity=".95"/><ellipse cx="37" cy="51" rx="4.2" ry="2.3" fill="#ff97a8" opacity=".35"/><ellipse cx="59" cy="51" rx="4.2" ry="2.3" fill="#ff97a8" opacity=".35"/><path d="M48 46v6" stroke="#d4968b" stroke-width="1.7" stroke-linecap="round"/>${mouthPath(def.mouth)}${accessoryPath(def.accessory, def.shirt)}<path d="M8 14c5-6 13-9 20-8-7 2-12 5-15 11Z" fill="url(#s-${def.id})" opacity=".85"/><circle cx="76" cy="18" r="9" fill="#fff" opacity=".12"/></svg>`;
   }
 
-  defs.forEach((def) => { def.dataUri = `url('data:image/svg+xml,${encodeURIComponent(svg(def))}')`; });
+  // Portraits live in the repository; no generated SVG or embedded CSS data URIs.
+  defs.forEach((def) => { def.dataUri = `url("${def.image}")`; });
 
   const api = {
     ids,
