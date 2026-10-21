@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+<title id="title">Last Card</title><desc id="desc">Emerald and gold playing cards behind the Last Card title</desc>
+<defs>
+<linearGradient id="emerald" x2="1" y2="1"><stop stop-color="#082c27"/><stop offset=".54" stop-color="#126551"/><stop offset="1" stop-color="#031b1b"/></linearGradient>
+<linearGradient id="gold" x2=".7" y2="1"><stop stop-color="#fff2bd"/><stop offset=".26" stop-color="#f2d27b"/><stop offset=".62" stop-color="#b98528"/><stop offset="1" stop-color="#f6d889"/></linearGradient>
+<linearGradient id="ivory" x2=".5" y2="1"><stop stop-color="#fffdf2"/><stop offset="1" stop-color="#dbc79b"/></linearGradient>
+<filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#000" flood-opacity=".76"/></filter>
+</defs>
+<g filter="url(#shadow)">
+<g transform="translate(266 92) rotate(-18 175 220)"><rect width="330" height="412" rx="26" fill="url(#emerald)" stroke="url(#gold)" stroke-width="13"/><rect x="18" y="18" width="294" height="376" rx="16" fill="none" stroke="#f5d58b" stroke-opacity=".65" stroke-width="3"/></g>
+<g transform="translate(399 80) rotate(15 175 220)"><rect width="330" height="412" rx="26" fill="url(#emerald)" stroke="url(#gold)" stroke-width="13"/><rect x="18" y="18" width="294" height="376" rx="16" fill="none" stroke="#f5d58b" stroke-opacity=".7" stroke-width="3"/></g>
+<g transform="translate(321 40) rotate(-4 175 220)"><rect width="330" height="412" rx="26" fill="#0b1618" stroke="url(#gold)" stroke-width="15"/><rect x="19" y="19" width="292" height="374" rx="16" fill="none" stroke="#d9b760" stroke-width="3"/><path d="M165 77C137 118 91 159 91 206c0 40 29 70 66 70 17 0 32-7 42-19l-22 63h-24v17h101v-17h-24l-22-63c10 12 25 19 42 19 37 0 66-30 66-70 0-47-46-88-74-129-17-25-29-44-38-55-9 11-22 30-39 55Z" fill="url(#emerald)" stroke="url(#gold)" stroke-width="13" stroke-linejoin="round"/><g fill="#f2ce71" font-family="Georgia,serif" font-size="32" font-weight="bold"><text x="36" y="59">♠</text><text x="267" y="376">♠</text></g></g>
+</g>
+<g text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="bold" letter-spacing="-4" paint-order="stroke fill" stroke="#352713" stroke-width="7" filter="url(#shadow)"><text x="480" y="390" font-size="191" fill="url(#ivory)">Last</text><text x="480" y="540" font-size="205" fill="url(#gold)">Card</text></g>
+<path d="M165 554 Q480 599 792 553" fill="none" stroke="url(#gold)" stroke-width="10" stroke-linecap="round"/><path d="m480 558 12 17-12 17-12-17Z" fill="#f6d884" stroke="#8d632e" stroke-width="2"/>
+</svg>
