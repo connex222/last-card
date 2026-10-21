@@ -3,103 +3,186 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#09090b">
+  <meta name="theme-color" content="#070f24">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Last Card</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+  <link rel="preload" href="/fonts/bodoni-moda-latin-900-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/app.css">
 </head>
-<body class="bg-zinc-950 overscroll-none">
+<body class="lounge ph overscroll-none">
   <div id="toast-wrap" aria-live="assertive"></div>
+  <div id="edge" class="ph-edge" aria-hidden="true"></div>
 
   <!-- Join -->
-  <main id="screen-join" class="min-h-[100dvh] flex flex-col gap-5 p-5 max-w-md mx-auto" hidden>
-    <h1 class="text-4xl font-black tracking-tight pt-4">Last Card</h1>
+  <main id="screen-join" class="ph-wrap min-h-[100dvh] flex flex-col gap-5 p-5" hidden>
+    <div class="ph-hero" id="hero" aria-hidden="true"></div>
+    <h1 class="ph-title serif gold-text text-center">Last Card</h1>
     <label class="flex flex-col gap-2">
-      <span class="text-zinc-300 font-bold">Room code (on the TV)</span>
+      <span class="ph-label">Room code on the TV</span>
       <input id="in-code" class="field uppercase tracking-[.3em] text-center text-3xl" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" placeholder="ABCD">
     </label>
     <label class="flex flex-col gap-2">
-      <span class="text-zinc-300 font-bold">Your name</span>
+      <span class="ph-label">Your name</span>
       <input id="in-name" class="field" maxlength="14" autocomplete="nickname" placeholder="e.g. Shaun">
     </label>
     <fieldset class="flex flex-col gap-2">
-      <legend class="text-zinc-300 font-bold mb-2">Pick your avatar</legend>
+      <legend class="ph-label mb-2">Pick your avatar</legend>
       <div id="avatars" class="grid grid-cols-6 gap-2"></div>
     </fieldset>
-    <p id="join-error" class="text-rose-300 font-bold min-h-[1.5em]" role="alert"></p>
-    <button id="btn-join" class="btn btn-go w-full text-xl mt-auto">Join game</button>
+    <p id="join-error" class="font-bold min-h-[1.5em]" style="color:#ff9aa8" role="alert"></p>
+    <div class="mt-auto flex flex-col gap-3">
+      <button id="btn-join" class="btn btn-go w-full text-xl">Join the table</button>
+      <p class="ph-or">or</p>
+      <button id="btn-solo" class="btn btn-ghost w-full">Play solo on this phone</button>
+    </div>
   </main>
 
   <!-- Waiting room -->
-  <main id="screen-wait" class="min-h-[100dvh] flex flex-col gap-5 p-5 max-w-md mx-auto" hidden>
+  <main id="screen-wait" class="ph-wrap min-h-[100dvh] flex flex-col gap-4 p-5" hidden>
     <header class="flex items-center gap-3 pt-2">
       <span id="w-avatar" class="text-5xl"></span>
-      <div>
-        <p id="w-name" class="text-2xl font-black"></p>
-        <p class="text-zinc-400 font-semibold">Room <span id="w-code"></span></p>
+      <div class="flex-1 min-w-0">
+        <p id="w-name" class="text-2xl font-extrabold truncate"></p>
+        <p class="muted font-bold">Table <span id="w-code"></span></p>
       </div>
     </header>
-    <p id="w-message" class="text-2xl font-bold leading-snug">You're in. Watch the TV.</p>
+    <p id="w-message" class="text-xl font-bold leading-snug"></p>
+
+    <section id="w-modes-wrap" class="flex flex-col gap-2" aria-label="Choose a game">
+      <p class="ph-label" id="w-modes-label">Game</p>
+      <div id="w-modes" class="flex flex-col gap-2"></div>
+    </section>
+
+    <section id="w-bots" class="ph-panel p-4 flex flex-col gap-3" hidden>
+      <div class="flex items-center justify-between">
+        <span class="font-extrabold">Computer players</span>
+        <div class="stepper">
+          <button id="w-bot-minus" aria-label="One fewer computer player">−</button>
+          <output id="w-bot-count">0</output>
+          <button id="w-bot-plus" aria-label="One more computer player">+</button>
+        </div>
+      </div>
+      <div id="w-bot-level" class="seg self-start" role="group" aria-label="Difficulty">
+        <button data-level="easy">Easy</button>
+        <button data-level="medium">Medium</button>
+        <button data-level="hard">Hard</button>
+      </div>
+      <div id="w-teams" class="flex items-center justify-between gap-3" hidden>
+        <span class="font-extrabold">Team size</span>
+        <div id="w-team-size" class="seg" role="group" aria-label="Team size">
+          <button data-size="2">Pairs</button>
+          <button data-size="3">Threes</button>
+        </div>
+      </div>
+    </section>
+ <div id="w-match-wrap" class="flex flex-col gap-2" hidden>
+      <p class="ph-label">Match</p>
+      <div id="w-match" class="seg self-start" role="group" aria-label="Match"></div>
+    </div>
+    <p id="w-team-problem" class="font-bold" style="color:#ffcf7a" hidden></p>
+
     <ul id="w-players" class="flex flex-col gap-2"></ul>
-    <div class="mt-auto flex flex-col gap-3">
+    <div class="mt-auto flex flex-col gap-3 pb-[env(safe-area-inset-bottom)]">
       <button id="btn-start" class="btn btn-go w-full text-xl" hidden>Deal the cards</button>
-      <button class="btn btn-ghost w-full" data-leave>Leave game</button>
+      <button class="btn btn-ghost w-full" data-leave>Leave the table</button>
     </div>
   </main>
 
   <!-- Playing -->
-  <main id="screen-play" class="h-[100dvh] flex flex-col max-w-xl mx-auto" hidden>
-    <header class="flex items-center gap-3 px-4 pt-3">
-      <span id="p-avatar" class="text-3xl"></span>
-      <p id="p-name" class="font-black text-lg flex-1 truncate"></p>
-      <p id="p-count" class="text-zinc-300 font-bold"></p>
-      <button class="btn btn-ghost px-4 text-base" data-leave aria-label="Leave game">Leave</button>
+  <main id="screen-play" class="ph-play ph-wrap" hidden>
+    <header class="ph-top">
+      <span id="p-avatar" class="me"></span>
+      <p class="nm"><span id="p-name"></span> <span id="p-team" class="ph-team" hidden></span></p>
+      <p id="p-count" class="ct"></p>
+      <button class="ph-icon-btn" data-leave aria-label="Leave the table">✕</button>
     </header>
 
-    <div class="px-4 pt-3">
-      <p id="p-turn" class="ph-turn is-theirs"></p>
-    </div>
+    <ul id="p-seats" class="ph-seats" aria-label="Players"></ul>
 
-    <section class="flex items-center gap-4 px-4 pt-4" aria-label="Table">
-      <div id="p-top" class="ph-mini"></div>
-      <div class="flex-1 min-w-0">
-        <p class="text-zinc-400 font-semibold text-sm">Colour to match</p>
-        <p id="p-color" class="text-2xl font-black"></p>
-        <ul id="p-others" class="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-zinc-300 font-semibold text-sm"></ul>
+    <section class="ph-table" aria-label="Table">
+      <div id="p-top" class="pile"></div>
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2"><p id="p-color" class="ph-color"></p><p id="p-stack" class="ph-stack" hidden></p><p id="p-fuse" class="ph-fuse" hidden>Fuse lit</p></div>
+        <p id="p-log" class="ph-log" aria-live="polite"></p>
       </div>
     </section>
 
-    <div class="flex-1"></div>
+    <p id="p-turn" class="ph-turn"></p>
+    <div id="p-clock" class="ph-clock" hidden aria-hidden="true"><i></i></div>
 
-    <section class="grid grid-cols-2 gap-3 px-4" aria-label="Actions">
-      <button id="btn-draw" class="ph-draw btn-accent" disabled>Draw card</button>
-      <button id="btn-shout" class="ph-shout">LAST CARD!</button>
+    <section id="p-signals" class="ph-signals" aria-label="Signal your partner" hidden>
+      <button type="button" data-signal="have">I’ve got…</button>
+      <button type="button" data-signal="hold">Hold back</button>
+      <button type="button" data-signal="help">Help!</button>
+      <div id="p-have" class="ph-have" hidden>
+        <button type="button" data-have="red" style="background:var(--red)" aria-label="I've got Red">●</button>
+        <button type="button" data-have="yellow" style="background:var(--yellow);color:#1a1405" aria-label="I've got Yellow">★</button>
+        <button type="button" data-have="green" style="background:var(--green)" aria-label="I've got Green">▲</button>
+        <button type="button" data-have="blue" style="background:var(--blue)" aria-label="I've got Blue">■</button>
+      </div>
     </section>
 
-    <section id="p-hand" class="ph-hand" aria-label="Your cards"></section>
+    <section class="ph-actions" aria-label="Actions">
+      <button id="btn-draw" class="ph-draw" disabled>Draw a card</button>
+      <button id="btn-shout" class="ph-shout">Last Card!</button>
+    </section>
+
+    <section id="p-hand" class="ph-hand" aria-label="Your cards">
+      <p id="p-hint" class="ph-hint"></p>
+      <div id="p-track" class="ph-track"></div>
+    </section>
   </main>
 
-  <!-- Wild colour picker -->
-  <div id="modal-wild" class="fixed inset-0 z-50 bg-zinc-950/90 flex flex-col justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))]" role="dialog" aria-modal="true" aria-labelledby="wild-title" hidden>
-    <div class="bg-zinc-900 rounded-3xl p-4 flex flex-col gap-3 max-w-xl w-full mx-auto">
-      <h2 id="wild-title" class="text-2xl font-black text-center">Choose the next colour</h2>
-      <div class="grid grid-cols-2 gap-3">
-        <button class="ph-swatch" style="background:var(--red)" data-color="red"><span aria-hidden="true">●</span>Red</button>
-        <button class="ph-swatch" style="background:var(--yellow);color:#18181b" data-color="yellow"><span aria-hidden="true">★</span>Yellow</button>
-        <button class="ph-swatch" style="background:var(--green)" data-color="green"><span aria-hidden="true">▲</span>Green</button>
-        <button class="ph-swatch" style="background:var(--blue)" data-color="blue"><span aria-hidden="true">■</span>Blue</button>
+  <!-- Solo setup -->
+  <div id="modal-solo" class="ph-sheet" role="dialog" aria-modal="true" aria-labelledby="solo-title" hidden>
+    <div class="ph-sheet-in">
+      <h2 id="solo-title" class="serif gold-text text-4xl text-center">Solo</h2>
+      <p class="text-center font-semibold muted">Classic rules against the house. No TV needed.</p>
+      <div class="flex items-center justify-between">
+        <span class="font-extrabold text-lg">Opponents</span>
+        <div class="stepper">
+          <button id="solo-minus" aria-label="One fewer opponent">−</button>
+          <output id="solo-count">3</output>
+          <button id="solo-plus" aria-label="One more opponent">+</button>
+        </div>
       </div>
+      <div id="solo-level" class="seg self-center" role="group" aria-label="Difficulty">
+        <button data-level="easy">Easy</button>
+        <button data-level="medium" aria-pressed="true">Medium</button>
+        <button data-level="hard">Hard</button>
+      </div>
+      <p id="solo-error" class="font-bold text-center min-h-[1.5em]" style="color:#ff9aa8" role="alert"></p>
+      <button id="btn-solo-go" class="btn btn-go w-full text-xl">Deal me in</button>
+      <button id="btn-solo-cancel" class="btn btn-ghost w-full">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Wild colour wheel -->
+  <div id="modal-wild" class="ph-sheet" role="dialog" aria-modal="true" aria-labelledby="wild-title" hidden>
+    <div class="ph-sheet-in">
+      <h2 id="wild-title" class="serif text-3xl text-center">Choose the next colour</h2>
+      <div id="wheel" class="ph-wheel"></div>
       <button id="btn-wild-cancel" class="btn btn-ghost w-full">Cancel</button>
     </div>
   </div>
 
+  <!-- Pile-Up 7: choose who to swap hands with -->
+  <div id="modal-swap" class="ph-sheet" role="dialog" aria-modal="true" aria-labelledby="swap-title" hidden>
+    <div class="ph-sheet-in">
+      <h2 id="swap-title" class="serif text-3xl text-center">Swap hands with…</h2>
+      <div id="swap-list" class="flex flex-col gap-2"></div>
+      <button id="btn-swap-cancel" class="btn btn-ghost w-full">Cancel</button>
+    </div>
+  </div>
+
   <!-- Round over -->
-  <div id="modal-end" class="fixed inset-0 z-40 bg-zinc-950/90 flex flex-col items-center justify-center gap-4 p-6 text-center" hidden>
-    <p id="e-avatar" class="text-8xl" style="animation: pop-in .4s ease-out both"></p>
-    <h2 id="e-title" class="text-4xl font-black"></h2>
-    <p id="e-sub" class="text-xl text-zinc-300 font-semibold"></p>
+  <div id="modal-end" class="ph-end" hidden>
+    <p id="e-avatar" class="av"></p>
+    <h2 id="e-title" class="serif gold-text"></h2>
+    <p id="e-sub" class="text-lg muted font-semibold"></p>
     <button id="btn-again" class="btn btn-go w-full max-w-sm text-xl" hidden>Deal next round</button>
+    <button id="btn-end-leave" class="btn btn-ghost w-full max-w-sm" data-leave hidden>Leave</button>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
