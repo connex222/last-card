@@ -71,7 +71,7 @@
   }
   function decorate() {
     scheduled = false;
-    const selectors = '.ph-avatar, .av, .me, .big-av, #w-avatar, #p-avatar, #e-avatar, .disc .em';
+    const selectors = '.av, .me, .big-av, #w-avatar, #p-avatar, #e-avatar, .disc .em';
     document.querySelectorAll(selectors).forEach((el) => {
       const source = (((el.classList.contains('lc-avatar-group') && el.children.length) ? el.dataset.lcAvatarGroup : '') || (el.classList.contains('ph-avatar') ? el.dataset.avatar : '') || el.textContent || '').trim();
       if (!AvatarLib.isValid(source)) {
