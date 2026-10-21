@@ -75,7 +75,7 @@
   function renderAvatars() {
     $('avatars').innerHTML = AVATARS.map((a) => {
       const def = AvatarLib.find(a);
-      return `<button type="button" class="ph-avatar" data-avatar="${a}" data-avatar-id="${a}" aria-pressed="${a === chosenAvatar}" aria-label="Choose avatar ${escapeHtml(def.name)}" title="${escapeHtml(def.name)}"></button>`;
+      return `<button type="button" class="ph-avatar" data-avatar="${a}" aria-pressed="${a === chosenAvatar}" aria-label="Choose avatar ${escapeHtml(def.name)}" title="${escapeHtml(def.name)}"><img class="lc-avatar-badge" src="${def.image}" alt="" width="54" height="54" loading="eager" decoding="async"><span class="lc-avatar-name">${escapeHtml(def.name)}</span></button>`;
     }).join('');
   }
 
