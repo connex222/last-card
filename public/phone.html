@@ -187,6 +187,14 @@
     <button id="btn-end-leave" class="btn btn-ghost w-full max-w-sm" data-leave hidden>Leave</button>
   </div>
 
+  <div id="lc-reactions" aria-label="Quick reactions" hidden style="position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:85;display:flex;gap:5px;padding:7px;border-radius:22px;background:#07191de8;border:1px solid #cca65c;box-shadow:0 6px 24px #0009">
+    <button type="button" data-reaction="😂" aria-label="Laugh" style="font-size:24px;padding:5px">😂</button>
+    <button type="button" data-reaction="😱" aria-label="Shocked" style="font-size:24px;padding:5px">😱</button>
+    <button type="button" data-reaction="🔥" aria-label="Fire" style="font-size:24px;padding:5px">🔥</button>
+    <button type="button" data-reaction="👏" aria-label="Applause" style="font-size:24px;padding:5px">👏</button>
+    <button type="button" data-reaction="😈" aria-label="Mischievous" style="font-size:24px;padding:5px">😈</button>
+    <button type="button" data-reaction="🙏" aria-label="Please" style="font-size:24px;padding:5px">🙏</button>
+  </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/cards.js"></script>
   <script src="/js/phone.js"></script>
