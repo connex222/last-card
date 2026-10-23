@@ -7,6 +7,13 @@
   const SESSION_KEY = 'lastcard:tv';
   const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const LEVEL_NAME = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+  const AvatarLib = window.LastCardAvatars;
+  function portrait(avatar, size = 72) {
+    const def = AvatarLib && AvatarLib.find(avatar);
+    if (!def || !def.image) return '<span aria-hidden="true">👤</span>';
+    return `<img src="${def.image}" alt="" width="${size}" height="${size}" loading="eager" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit" />`;
+  }
+
 
   const socket = io({ transports: ['websocket', 'polling'] });
   let state = null;
@@ -163,7 +170,7 @@
       ? `Computer, ${LEVEL_NAME[state.botLevel]}`
       : p.connected ? (p.isLeader ? 'Can deal from their phone' : 'Ready') : 'Phone asleep';
     return `<li><button class="tv-chip ${p.connected ? '' : 'is-away'}" data-remove="${p.id}" title="Remove ${escapeHtml(p.name)}">
-      <span class="av">${p.avatar}</span>
+      <span class="av" style="overflow:hidden">${portrait(p.avatar, 64)}</span>
       <span class="text-left"><span class="nm block">${escapeHtml(p.name)}</span><span class="mt block">${meta}${p.wins ? `, ${p.wins} win${p.wins > 1 ? 's' : ''}` : ''}</span></span>
     </button></li>`;
   }
@@ -264,7 +271,7 @@
       const meta = p.isCurrent && p.isBot && state.phase === 'playing'
         ? `<span class="thinking" aria-label="Thinking"><i></i><i></i><i></i></span>`
         : `${fan}<span>${p.cardCount}</span>`;
-      const html = `<span class="disc"><span class="em">${p.avatar}</span>${badge}</span>
+      const html = `<span class="disc"><span class="portrait" style="display:block;width:100%;height:100%;overflow:hidden;border-radius:50%">${portrait(p.avatar, 96)}</span>${badge}</span>
         <span class="name">${escapeHtml(p.name)}</span>
         ${team ? `<span class="team-tag">Team ${team.name}${p.isBot ? ', computer' : ''}</span>` : p.isBot ? `<span class="bot-tag">Computer</span>` : ''}
         <span class="meta">${p.connected ? meta : 'Away'}${state.match.type === 'points' ? `<span class="pts">${p.points} pts</span>` : ''}</span>`;
@@ -504,7 +511,7 @@
     const ranked = [...state.players].sort((a, b) => score(b) - score(a) || a.out - b.out);
     const best = ranked.length ? score(ranked[0]) : 0;
     $('w-scores').innerHTML = ranked.map((p) => `
-      <li class="tv-chip ${score(p) === best && best > 0 ? 'is-top' : ''} ${p.out ? 'is-away' : ''}"><span class="av">${p.avatar}</span>
+      <li class="tv-chip ${score(p) === best && best > 0 ? 'is-top' : ''} ${p.out ? 'is-away' : ''}"><span class="av" style="overflow:hidden">${portrait(p.avatar, 64)}</span>
         <span class="text-left"><span class="nm block">${escapeHtml(p.name)}</span>
         <span class="mt block">${byPoints ? `${p.points} pts${mt.gains[p.id] ? ` (+${mt.gains[p.id]})` : ''}` : `${p.wins} win${p.wins === 1 ? '' : 's'}`}${p.out ? ', out' : p.inRound && p.id !== state.winnerId && !byPoints ? `, ${p.cardCount} left` : ''}</span></span>
       </li>`).join('');
