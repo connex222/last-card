@@ -34,9 +34,35 @@
     else createRoom();
   });
 
+  // Audience-facing CATCH! display; countdown uses server-supplied remaining time.
+  let catchOverlay = null;
+  let catchDeadlineLocal = 0;
+  let catchClock = null;
+  function syncCatchOverlay(windowState) {
+    if (!catchOverlay) {
+      catchOverlay = document.createElement('div');
+      catchOverlay.id = 'lc-tv-catch';
+      catchOverlay.setAttribute('role', 'status');
+      catchOverlay.style.cssText = 'position:fixed;top:7%;left:50%;transform:translateX(-50%);z-index:120;text-align:center;background:#081719ee;border:3px solid #e8be6e;border-radius:24px;padding:16px 35px;color:#fff4d0;font-weight:900;font-size:clamp(24px,3vw,55px);box-shadow:0 16px 50px #000a;pointer-events:none';
+      document.body.appendChild(catchOverlay);
+    }
+    if (catchClock) clearInterval(catchClock);
+    if (!windowState || !windowState.remainingMs) { catchOverlay.hidden = true; return; }
+    catchDeadlineLocal = performance.now() + windowState.remainingMs;
+    const draw = () => {
+      const left = Math.max(0, catchDeadlineLocal - performance.now());
+      catchOverlay.hidden = left <= 0;
+      if (left > 0) catchOverlay.textContent = 'CATCH! ' + (left / 1000).toFixed(1) + 's';
+      else { clearInterval(catchClock); catchClock = null; }
+    };
+    draw();
+    if (!catchOverlay.hidden) catchClock = setInterval(draw, 100);
+  }
+
   socket.on('update-tv', (s) => {
     const firstState = !state;
     state = s;
+    syncCatchOverlay(s.catchWindow);
     const events = s.events || [];
     if (firstState) {
       // Don't replay old news after a reload.
