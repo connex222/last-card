@@ -10,15 +10,15 @@
  */
 
 const BOTS = [
-  { name: 'Croupier', avatar: 'onyx' },
-  { name: 'Duchess', avatar: 'glimmer' },
+  { name: 'Croupier', avatar: 'mirage' },
+  { name: 'Duchess', avatar: 'zara' },
   { name: 'High Roller', avatar: 'blaze' },
   { name: 'Maestro', avatar: 'luna' },
-  { name: 'Velvet', avatar: 'ember' },
+  { name: 'Velvet', avatar: 'velvet' },
   { name: 'Ace', avatar: 'jinx' },
-  { name: 'Baron', avatar: 'halo' },
-  { name: 'Countess', avatar: 'iris' },
-  { name: 'Dealer Dan', avatar: 'nova' },
+  { name: 'Baron', avatar: 'bingo' },
+  { name: 'Countess', avatar: 'willow' },
+  { name: 'Dealer Dan', avatar: 'dash' },
 ];
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
