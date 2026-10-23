@@ -143,6 +143,7 @@ class LastCardGame {
     this.activeColor = null;
     this.pendingDrawnId = null; // card just drawn that the player may play
     this.pendingShoutId = null; // player on 1 card who has not called yet
+    this.catchDeadline = 0; // server clock, four-second first-tap challenge
     this.winnerId = null;
     this.turnNumber = 0;
     this.log = [];
@@ -258,17 +259,25 @@ class LastCardGame {
     return hand.filter((c) => this.canPlay(c, hand)).map((c) => c.id);
   }
 
-  /** Called before any player acts: punishes a player who went down to one card without calling. */
-  checkShoutPenalty(actorId) {
+  /** Legacy auto-penalty retired: a player must now actually tap CATCH! first. */
+  checkShoutPenalty() {
+    if (this.pendingShoutId && Date.now() >= this.catchDeadline) this.pendingShoutId = null;
+  }
+
+  /** Atomically award a two-card penalty to an uncaught Last Card offender. */
+  catch(playerId, now = Date.now()) {
     const target = this.pendingShoutId;
-    if (!target) return;
+    if (this.phase !== 'playing' || !target || now >= this.catchDeadline ||
+        target === playerId || !this.has(playerId) || !this.hands[target] ||
+        this.hands[target].length !== 1 || this.called[target]) return { ok: false, error: 'CATCH! window closed.' };
     this.pendingShoutId = null;
-    if (target === actorId || !this.hands[target] || this.hands[target].length !== 1) return;
+    this.catchDeadline = 0;
     this.drawCards(target, 2);
-    this.addEvent('penalty', { by: target });
-    const msg = `${this.names[target]} forgot to call Last Card — draws 2`;
+    this.addEvent('penalty', { by: target, catcher: playerId });
+    const msg = `${this.names[playerId]} caught ${this.names[target]} — draws 2!`;
     this.addLog(msg);
-    this.setFlash(msg, 'danger', target, "You forgot to call Last Card — draw 2");
+    this.setFlash(msg, 'danger', target, 'Caught! Draw 2 cards.');
+    return { ok: true, offenderId: target };
   }
 
   // ---------- actions (each returns { ok, error? }) ----------
@@ -337,7 +346,7 @@ class LastCardGame {
       this.setFlash(team !== null && team !== undefined ? `Team ${this.teamNames[team] || team + 1} wins!` : `${name} wins!`, 'success');
       return { ok: true };
     }
-    if (hand.length === 1 && !this.called[playerId]) this.pendingShoutId = playerId;
+    if (hand.length === 1 && !this.called[playerId]) { this.pendingShoutId = playerId; this.catchDeadline = Date.now() + 4000; }
 
     const two = this.order.length === 2;
     switch (card.value) {
@@ -509,7 +518,7 @@ class LastCardGame {
       this.setFlash(`${name} wins!`, 'success');
       return { ok: true, result: 'played' };
     }
-    if (hand.length === 1 && !this.called[playerId]) this.pendingShoutId = playerId;
+    if (hand.length === 1 && !this.called[playerId]) { this.pendingShoutId = playerId; this.catchDeadline = Date.now() + 4000; }
 
     if (card.value === 'skip') {
       for (const id of this.order) if (id !== playerId) this.frozenUntil[id] = now + FRENZY.FREEZE_MS;
