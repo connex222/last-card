@@ -17,12 +17,12 @@
     try {
       audio ||= new (window.AudioContext || window.webkitAudioContext)();
       if (audio.state === 'suspended') audio.resume();
-      const count = type === 'win' ? 3 : type === 'shuffle' ? 4 : 1;
+      const count = type === 'win' || type === 'catch' ? 3 : type === 'shuffle' ? 4 : 1;
       for (let i = 0; i < count; i++) {
         const osc = audio.createOscillator(), gain = audio.createGain();
-        const start = audio.currentTime + i * (type === 'win' ? .12 : .045);
+        const start = audio.currentTime + i * (type === 'win' || type === 'catch' ? .12 : .045);
         osc.type = type === 'draw' ? 'triangle' : 'sine';
-        osc.frequency.setValueAtTime(type === 'win' ? 392 * Math.pow(1.26,i) : type === 'draw' ? 340 : 270 + i * 85, start);
+        osc.frequency.setValueAtTime(type === 'win' ? 392 * Math.pow(1.26,i) : type === 'draw' ? 340 : type === 'catch' ? [640, 520, 780][i] : 270 + i * 85, start);
         gain.gain.setValueAtTime(.0001,start); gain.gain.exponentialRampToValueAtTime(.032,start+.008);
         gain.gain.exponentialRampToValueAtTime(.0001,start+.12);
         osc.connect(gain).connect(audio.destination); osc.start(start); osc.stop(start+.13);
