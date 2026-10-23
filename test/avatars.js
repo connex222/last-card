@@ -13,11 +13,8 @@ assert.strictEqual(new Set(lib.ids).size, 16, 'Avatar ids must be unique');
 for (const id of lib.ids) {
   const def = lib.find(id);
   assert(def.name && def.name.length > 2);
-  const encoded = lib.art(id).match(/^url\("data:image\/svg\+xml,([^\"]+)"\)$/);
-  assert(encoded, `${id} must have a self-contained SVG background`);
-  const svg = decodeURIComponent(encoded[1]);
-  assert(svg.includes('<svg') && svg.includes('</svg>'), `${id} SVG incomplete`);
-  assert(svg.includes('<ellipse cx="41"'), `${id} must have anime portrait eyes`);
+  assert.strictEqual(lib.art(id), `url("/assets/avatars/${id}.webp")`);
+  assert(fs.statSync(path.join(__dirname, '..', 'public/assets/avatars', `${id}.webp`)).size > 1000, `${id} WebP portrait missing`);
 }
 const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
 const match = server.match(/const AVATARS = \[([^\]]+)\];/);
