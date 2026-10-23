@@ -792,7 +792,7 @@
   let catchHideTimer = null;
   const syncCatch = () => {
     clearTimeout(catchHideTimer);
-    const remaining = state && state.catchExpiresAt ? state.catchExpiresAt - Date.now() : 0;
+    const remaining = state && Number.isFinite(state.catchRemainingMs) ? state.catchRemainingMs : 0;
     catchButton.hidden = !(state && state.phase === 'playing' && state.canCatch && remaining > 0);
     if (!catchButton.hidden) catchHideTimer = setTimeout(() => { catchButton.hidden = true; }, remaining);
   };
