@@ -395,6 +395,17 @@
         const seated = state.players.filter((p) => p.inRound);
         const n = seated.length;
         await Promise.all(seated.map((p, i) => fly(renderBack(), seatEl(p.id), seatEl(seated[((i + e.direction) % n + n) % n].id), { startScale: 0.35, endScale: 0.35, duration: 700 })));
+      } else if (e.type === 'penalty' && e.catcher) {
+        spotlight(e.by);
+        if (window.LastCardExperience) window.LastCardExperience.sound('catch');
+        const banner = document.createElement('div');
+        banner.className = 'lc-catch-success';
+        banner.textContent = 'CATCH! +2';
+        banner.setAttribute('role', 'status');
+        banner.style.cssText = 'position:fixed;top:22%;left:50%;transform:translateX(-50%);padding:20px 36px;border:3px solid #e8be6e;border-radius:22px;background:#361018f2;color:#fff0c2;font-weight:900;font-size:clamp(30px,4vw,72px);z-index:140;pointer-events:none;box-shadow:0 12px 38px #000b';
+        document.body.appendChild(banner);
+        if (!REDUCE) { banner.animate([{transform:'translateX(-50%) scale(.6)',opacity:0},{transform:'translateX(-50%) scale(1.08)',opacity:1},{transform:'translateX(-50%) scale(1)',opacity:1}],{duration:420,easing:'ease-out'}); }
+        setTimeout(() => banner.remove(), 1700);
       } else if (e.type === 'shout' || e.type === 'penalty' || e.type === 'win') {
         spotlight(e.by);
       }
