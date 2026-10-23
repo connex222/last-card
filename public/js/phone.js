@@ -780,6 +780,30 @@
     socket.emit('player:shout', {}, (res) => { if (!res || !res.ok) shake(e.currentTarget); else buzz([40, 30, 80]); });
   });
 
+  // CATCH! is a server-authoritative first-tap race; clients only submit intent.
+  const catchButton = document.createElement('button');
+  catchButton.type = 'button';
+  catchButton.id = 'btn-catch';
+  catchButton.textContent = 'CATCH!';
+  catchButton.className = 'btn btn-danger';
+  catchButton.hidden = true;
+  catchButton.style.cssText = 'position:fixed;bottom:calc(88px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:90;min-width:150px;font-weight:900;font-size:1.35rem;box-shadow:0 8px 30px #0009';
+  document.body.appendChild(catchButton);
+  const syncCatch = () => {
+    catchButton.hidden = !(state && state.phase === 'playing' && state.canCatch);
+  };
+  socket.on('update-player', syncCatch);
+  socket.on('disconnect', () => { catchButton.hidden = true; });
+  catchButton.addEventListener('click', () => {
+    if (!state || !state.canCatch) return;
+    catchButton.disabled = true;
+    socket.emit('player:catch', {}, (result) => {
+      catchButton.disabled = false;
+      if (!result || !result.ok) { catchButton.hidden = true; toast('CATCH! window closed.', 'info', 1200); }
+      else { catchButton.hidden = true; buzz([90,40,90]); }
+    });
+  });
+
   // Fixed reactions remain non-interactive outside a live round.
   const reactionBar = document.getElementById('lc-reactions');
   const refreshReactionBar = () => { if (reactionBar) reactionBar.style.display = state && state.phase === 'playing' ? 'flex' : 'none'; };
