@@ -565,6 +565,7 @@ class Room {
       canStart: pub.phase !== 'playing' && pub.players.filter((x) => x.connected).length >= MIN_PLAYERS,
       canShout: inRound ? g.canShout(p.id) : false,
       canCatch: !!(inRound && g.pendingShoutId && g.pendingShoutId !== p.id && !g.called[g.pendingShoutId] && Date.now() < g.catchDeadline),
+      catchExpiresAt: inRound && g.pendingShoutId ? g.catchDeadline : 0,
       log: pub.log[pub.log.length - 1] || '',
       mode: pub.mode,
       modes: pub.modes,
