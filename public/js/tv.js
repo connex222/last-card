@@ -248,6 +248,23 @@
   }
 
   function seatEl(id) { return $('t-seats').querySelector(`[data-seat="${id}"]`); }
+  // Phase 4: transient audience-safe emote above the player's public seat.
+  socket.on('player-reaction', ({ playerId, emoji } = {}) => {
+    if (!new Set(['😂','😱','🔥','👏','😈','🙏']).has(emoji)) return;
+    const seat = seatEl(playerId);
+    if (!seat) return;
+    const old = seat.querySelector('.lc-reaction-pop');
+    if (old) old.remove();
+    const bubble = document.createElement('span');
+    bubble.className = 'lc-reaction-pop';
+    bubble.textContent = emoji;
+    bubble.setAttribute('aria-label', 'Player reaction');
+    bubble.style.cssText = 'position:absolute;top:-32px;left:50%;transform:translateX(-50%);font-size:46px;line-height:1;filter:drop-shadow(0 4px 5px #0009);pointer-events:none;z-index:50';
+    seat.style.position = 'relative';
+    seat.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 1800);
+  });
+
 
   function showFlash(f) {
     const wrap = $('t-flash-wrap');
