@@ -11,15 +11,15 @@
     red: 'rgba(224,40,63,.42)', yellow: 'rgba(244,196,48,.36)', green: 'rgba(18,168,118,.45)', blue: 'rgba(46,111,240,.45)',
     violet: 'rgba(168,116,255,.45)', teal: 'rgba(34,211,197,.4)', pink: 'rgba(255,79,154,.42)', orange: 'rgba(255,140,26,.42)',
   };
-  const COLOR_NAME = { red: 'Red', yellow: 'Yellow', green: 'Green', blue: 'Blue', violet: 'Violet', teal: 'Teal', pink: 'Pink', orange: 'Orange' };
+  const COLOR_NAME = { red: 'Ruby', yellow: 'Topaz', green: 'Emerald', blue: 'Sapphire', violet: 'Amethyst', teal: 'Opal', pink: 'Rose', orange: 'Amber' };
   // Shape markers so colour-blind players can tell colours apart.
   const COLOR_MARK = { red: '●', yellow: '★', green: '▲', blue: '■', violet: '◆', teal: '✚', pink: '♥', orange: '✦' };
   const LIGHT = new Set(['yellow', 'teal', 'orange']); // colours that need dark text on top
   const COLOR_ORDER = { red: 0, yellow: 1, green: 2, blue: 3, violet: 4, teal: 5, pink: 6, orange: 7, wild: 8 };
   const VALUE_ORDER = { draw1: 10, skip: 11, skipall: 11.5, reverse: 12, draw2: 13, draw5: 13.5, bomb: 14, eclipse: 15, wild: 16, wild2: 17, wild4: 18, wilddrain: 19 };
   const NAMES = {
-    skip: 'Skip', reverse: 'Reverse', draw2: 'Draw Two', wild: 'Wild', wild4: 'Wild Draw Four', bomb: 'Bomb',
-    draw1: 'Draw One', draw5: 'Draw Five', skipall: 'Skip Everyone', eclipse: 'Eclipse', wild2: 'Wild Draw Two', wilddrain: 'Wild Draw Until',
+    skip: 'Pass', reverse: 'Turnabout', draw2: 'Double Down', wild: 'House Card', wild4: 'High Roller', bomb: 'Powder Keg',
+    draw1: 'Tip', draw5: 'Raise', skipall: 'Encore', eclipse: 'Eclipse', wild2: 'House +2', wilddrain: 'Bottomless',
   };
 
   const ICON = {
@@ -66,7 +66,7 @@
     const night = card.side === 'night' ? 'lc-n' : '';
     const mark = card.color !== 'wild' ? `<span class="lc-mark">${COLOR_MARK[card.color]}</span>` : '';
     return `<${tag} class="lc-card lc-${card.color} ${night} ${opts.extraClass || ''}" data-id="${card.id}" aria-label="${label(card)}" ${opts.attrs || ''}>
-      <span class="lc-oval"></span>
+      <span class="lc-deco-frame" aria-hidden="true" style="position:absolute;inset:8%;border:3px double rgba(228,188,104,.86);clip-path:polygon(0 8%,8% 0,92% 0,100% 8%,100% 92%,92% 100%,8% 100%,0 92%);pointer-events:none"></span>
       <span class="lc-face ${f.cls}">${f.face}</span>
       <span class="lc-corner lc-tl ${f.cls === 'lc-underline' ? 'lc-underline' : ''}"><span class="lc-num">${f.corner}</span>${mark}</span>
       <span class="lc-corner lc-br ${f.cls === 'lc-underline' ? 'lc-underline' : ''}"><span class="lc-num">${f.corner}</span></span>
@@ -76,7 +76,7 @@
   /** Card back. side 'night' gives Eclipse's moonlit back. */
   function renderBack(extraClass = '', side = 'day') {
     return `<div class="lc-card lc-back ${side === 'night' ? 'lc-back-n' : ''} ${extraClass}" aria-hidden="true">
-      <span class="lc-oval"></span>
+      <span class="lc-deco-frame" aria-hidden="true" style="position:absolute;inset:8%;border:3px double rgba(228,188,104,.86);clip-path:polygon(0 8%,8% 0,92% 0,100% 8%,100% 92%,92% 100%,8% 100%,0 92%);pointer-events:none"></span>
       <span class="lc-face">Last<br>Card</span>
     </div>`;
   }
