@@ -11,7 +11,8 @@ assert.equal(avatars.ids.length, 16);
 assert.equal(new Set(avatars.ids).size, 16);
 for (const id of avatars.ids) {
   assert.equal(avatars.isValid(id), true);
-  assert.ok(avatars.art(id).startsWith('url("data:image/svg+xml,'));
+  assert.equal(avatars.art(id), `url("/assets/avatars/${id}.webp")`);
+  assert.ok(fs.statSync(`public/assets/avatars/${id}.webp`).size > 1000, `${id} portrait file missing`);
   assert.ok(avatars.name(id));
 }
 const server = fs.readFileSync('server.js', 'utf8');
