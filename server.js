@@ -119,6 +119,8 @@ class Room {
     this.tvless = false; // phone-only Solo game with no TV attached
     this.botTimer = null;
     this.botKey = null;
+    this.catchBotTimer = null;
+    this.catchBotKey = null;
     this.teamSize = 2; // Tag Team: 2 or 3 players per team
     // Hot Potato clocks
     this.fuseTimer = null; this.fuseKey = null; this.fuseLitAt = 0;
@@ -229,6 +231,31 @@ class Room {
       }
     }
     return { ok: true };
+  }
+
+  /** Bot CATCH! respects the same server deadline and first-valid-tap rules as humans. */
+  scheduleCatchBots() {
+    const g = this.game;
+    const offender = g && g.pendingShoutId;
+    const key = offender && g.catchDeadline > Date.now() ? `${offender}:${g.catchDeadline}` : null;
+    if (!key || g.phase !== 'playing') {
+      if (this.catchBotTimer) clearTimeout(this.catchBotTimer);
+      this.catchBotTimer = null; this.catchBotKey = null;
+      return;
+    }
+    if (this.catchBotKey === key) return;
+    if (this.catchBotTimer) clearTimeout(this.catchBotTimer);
+    this.catchBotKey = key;
+    const bots = this.players.filter(p => p.isBot && g.has(p.id) && p.id !== offender);
+    if (!bots.length) { this.catchBotKey = null; return; }
+    const difficulty = this.botLevel;
+    const delay = difficulty === 'hard' ? 1050 : difficulty === 'medium' ? 1900 : 2900;
+    this.catchBotTimer = setTimeout(() => {
+      this.catchBotTimer = null;
+      if (this.game !== g || g.phase !== 'playing' || g.pendingShoutId !== offender || Date.now() >= g.catchDeadline) return;
+      const caught = g.catch(bots[0].id);
+      if (caught.ok) this.broadcast();
+    }, delay);
   }
 
   /** If it's a computer player's turn, act after a short "thinking" pause. */
@@ -590,6 +617,7 @@ class Room {
     }
     this.scheduleAwaySkip();
     this.scheduleBot();
+    this.scheduleCatchBots();
     this.scheduleFrenzy();
     saveRooms();
   }
