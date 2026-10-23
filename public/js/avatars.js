@@ -5,27 +5,30 @@
   'use strict';
 
   const defs = [
-    { id: 'akari', name: 'Ace', image: '/assets/avatars/ace.webp' },
+    { id: 'ace', name: 'Ace', image: '/assets/avatars/ace.webp' },
     { id: 'blaze', name: 'Blaze', image: '/assets/avatars/blaze.webp' },
-    { id: 'chibi', name: 'Sunny', image: '/assets/avatars/sunny.webp' },
-    { id: 'dusk', name: 'Atlas', image: '/assets/avatars/atlas.webp' },
-    { id: 'ember', name: 'Velvet', image: '/assets/avatars/velvet.webp' },
-    { id: 'frost', name: 'Cipher', image: '/assets/avatars/cipher.webp' },
-    { id: 'glimmer', name: 'Zara', image: '/assets/avatars/zara.webp' },
-    { id: 'halo', name: 'Bingo', image: '/assets/avatars/bingo.webp' },
-    { id: 'iris', name: 'Willow', image: '/assets/avatars/willow.webp' },
+    { id: 'sunny', name: 'Sunny', image: '/assets/avatars/sunny.webp' },
+    { id: 'atlas', name: 'Atlas', image: '/assets/avatars/atlas.webp' },
+    { id: 'velvet', name: 'Velvet', image: '/assets/avatars/velvet.webp' },
+    { id: 'cipher', name: 'Cipher', image: '/assets/avatars/cipher.webp' },
+    { id: 'zara', name: 'Zara', image: '/assets/avatars/zara.webp' },
+    { id: 'bingo', name: 'Bingo', image: '/assets/avatars/bingo.webp' },
+    { id: 'willow', name: 'Willow', image: '/assets/avatars/willow.webp' },
     { id: 'jinx', name: 'Jinx', image: '/assets/avatars/jinx.webp' },
-    { id: 'kitsu', name: 'Riff', image: '/assets/avatars/riff.webp' },
+    { id: 'riff', name: 'Riff', image: '/assets/avatars/riff.webp' },
     { id: 'luna', name: 'Luna', image: '/assets/avatars/luna.webp' },
-    { id: 'nova', name: 'Dash', image: '/assets/avatars/dash.webp' },
-    { id: 'onyx', name: 'Mirage', image: '/assets/avatars/mirage.webp' },
+    { id: 'dash', name: 'Dash', image: '/assets/avatars/dash.webp' },
+    { id: 'mirage', name: 'Mirage', image: '/assets/avatars/mirage.webp' },
     { id: 'pixel', name: 'Pixel', image: '/assets/avatars/pixel.webp' },
-    { id: 'sora', name: 'Maple', image: '/assets/avatars/maple.webp' },
+    { id: 'maple', name: 'Maple', image: '/assets/avatars/maple.webp' },
   ];
 
   const byId = Object.fromEntries(defs.map((d) => [d.id, d]));
   const ids = defs.map((d) => d.id);
   const valid = new Set(ids);
+  const legacy = Object.freeze({"akari":"ace","chibi":"sunny","dusk":"atlas","ember":"velvet","frost":"cipher","glimmer":"zara","halo":"bingo","iris":"willow","kitsu":"riff","nova":"dash","onyx":"mirage","sora":"maple"});
+  const canonical = (value) => legacy[value] || value;
+  const isValid = (value) => valid.has(canonical(value));
 
   const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 
@@ -92,8 +95,8 @@
   const api = {
     ids,
     defs,
-    isValid(value) { return valid.has(value); },
-    normalize(value) { return valid.has(value) ? value : ids[0]; },
+    isValid(value) { return isValid(value); },
+    normalize(value) { const id = canonical(value); return valid.has(id) ? id : ids[0]; },
     name(value) { const id = api.normalize(value); return byId[id].name; },
     art(value) { const id = api.normalize(value); return byId[id].dataUri; },
     find(value) { const id = api.normalize(value); return byId[id]; },
