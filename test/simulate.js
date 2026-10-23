@@ -72,7 +72,9 @@ console.log(`engine: ${finished}/2000 random games finished, card count always 1
   assert.strictEqual(g.pendingShoutId, 'c');
   g.hands.a.push({ id: 'u3', color: 'red', value: '9' });
   assert.ok(g.play('a', 'u3').ok);
-  assert.strictEqual(g.hands.c.length, 3, 'forgot to call = draw 2');
+  assert.strictEqual(g.hands.c.length, 1, 'no automatic penalty before an opponent taps CATCH!');
+  assert.ok(g.catch('a').ok, 'an eligible opponent can catch the offender');
+  assert.strictEqual(g.hands.c.length, 3, 'successful CATCH! draws exactly two');
 
   // reverse with two players acts as skip
   const h = new LastCardGame([{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }]);
