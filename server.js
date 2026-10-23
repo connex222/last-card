@@ -496,6 +496,7 @@ class Room {
     return {
       code: this.code,
       phase: this.phase,
+      catchWindow: g && g.pendingShoutId && Date.now() < g.catchDeadline ? { offenderId: g.pendingShoutId, remainingMs: Math.max(0, g.catchDeadline - Date.now()) } : null,
       round: this.round,
       joinUrl: this.joinUrl,
       hostLabel: this.hostLabel,
