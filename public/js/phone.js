@@ -789,8 +789,12 @@
   catchButton.hidden = true;
   catchButton.style.cssText = 'position:fixed;bottom:calc(88px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:90;min-width:150px;font-weight:900;font-size:1.35rem;box-shadow:0 8px 30px #0009';
   document.body.appendChild(catchButton);
+  let catchHideTimer = null;
   const syncCatch = () => {
-    catchButton.hidden = !(state && state.phase === 'playing' && state.canCatch);
+    clearTimeout(catchHideTimer);
+    const remaining = state && state.catchExpiresAt ? state.catchExpiresAt - Date.now() : 0;
+    catchButton.hidden = !(state && state.phase === 'playing' && state.canCatch && remaining > 0);
+    if (!catchButton.hidden) catchHideTimer = setTimeout(() => { catchButton.hidden = true; }, remaining);
   };
   socket.on('update-player', syncCatch);
   socket.on('disconnect', () => { catchButton.hidden = true; });
