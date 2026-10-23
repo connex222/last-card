@@ -780,6 +780,22 @@
     socket.emit('player:shout', {}, (res) => { if (!res || !res.ok) shake(e.currentTarget); else buzz([40, 30, 80]); });
   });
 
+  // Fixed reactions remain non-interactive outside a live round.
+  const reactionBar = document.getElementById('lc-reactions');
+  const refreshReactionBar = () => { if (reactionBar) reactionBar.style.display = state && state.phase === 'playing' ? 'flex' : 'none'; };
+  socket.on('update-player', refreshReactionBar);
+  socket.on('disconnect', () => { if (reactionBar) reactionBar.style.display = 'none'; });
+  if (reactionBar) {
+    reactionBar.style.display = 'none';
+    reactionBar.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-reaction]');
+      if (!btn || !state || state.phase !== 'playing') return;
+      socket.emit('player:reaction', { emoji: btn.dataset.reaction }, (answer) => {
+        if (!answer || !answer.ok) toast((answer && answer.error) || 'Reaction not sent.', 'info', 1200);
+      });
+    });
+  }
+
   // First paint before the socket connects
   if (!(session && session.playerId)) showJoin();
 })();
