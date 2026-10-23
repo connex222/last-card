@@ -566,6 +566,7 @@ class Room {
       canShout: inRound ? g.canShout(p.id) : false,
       canCatch: !!(inRound && g.pendingShoutId && g.pendingShoutId !== p.id && !g.called[g.pendingShoutId] && Date.now() < g.catchDeadline),
       catchExpiresAt: inRound && g.pendingShoutId ? g.catchDeadline : 0,
+      catchRemainingMs: inRound && g.pendingShoutId ? Math.max(0, g.catchDeadline - Date.now()) : 0,
       log: pub.log[pub.log.length - 1] || '',
       mode: pub.mode,
       modes: pub.modes,
