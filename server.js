@@ -37,7 +37,9 @@ const FUSE_MIN_MS = 20000 * HOT_SPEED;
 const FUSE_MAX_MS = 60000 * HOT_SPEED;
 const TURN_MS = 5000 * HOT_SPEED;
 const STALL_MS = 7000 * HOT_SPEED; // Frenzy: if nobody plays for this long, a card comes off the deck
-const AVATARS = ['akari', 'blaze', 'chibi', 'dusk', 'ember', 'frost', 'glimmer', 'halo', 'iris', 'jinx', 'kitsu', 'luna', 'nova', 'onyx', 'pixel', 'sora'];
+const AVATARS = ['ace', 'blaze', 'sunny', 'atlas', 'velvet', 'cipher', 'zara', 'bingo', 'willow', 'jinx', 'riff', 'luna', 'dash', 'mirage', 'pixel', 'maple'];
+const LEGACY_AVATARS = Object.freeze({akari:'ace',chibi:'sunny',dusk:'atlas',ember:'velvet',frost:'cipher',glimmer:'zara',halo:'bingo',iris:'willow',kitsu:'riff',nova:'dash',onyx:'mirage',sora:'maple'});
+const normaliseAvatar = value => { const id = LEGACY_AVATARS[value] || value; return AVATARS.includes(id) ? id : AVATARS[0]; };
 const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I or O
 
 // ---------- network address shown in the QR code ----------
@@ -223,7 +225,7 @@ class Room {
         const used = new Set(this.players.map((p) => p.name));
         const b = BOTS.find((x) => !used.has(x.name));
         if (!b) break;
-        this.players.push({ id: 'bot-' + token(), name: b.name, avatar: b.avatar, socketId: null, connected: true, wins: 0, isBot: true });
+        this.players.push({ id: 'bot-' + token(), name: b.name, avatar: normaliseAvatar(b.avatar), socketId: null, connected: true, wins: 0, isBot: true });
       }
     }
     return { ok: true };
@@ -716,7 +718,7 @@ io.on('connection', (socket) => {
     const r = await new Room(io, publicBase(socket.handshake)).init();
     rooms.set(r.code, r);
     r.tvless = true;
-    const p = { id: token(), name: n, avatar: AVATARS.includes(avatar) ? avatar : AVATARS[0], socketId: socket.id, connected: true, wins: 0, resumeToken: token() };
+    const p = { id: token(), name: n, avatar: normaliseAvatar(avatar), socketId: socket.id, connected: true, wins: 0, resumeToken: token() };
     r.players.push(p);
     r.setMode('solo');
     r.setBots(bots === undefined ? 3 : bots, BOT_LEVELS.includes(level) ? level : 'medium');
@@ -754,7 +756,7 @@ io.on('connection', (socket) => {
       if (getMode(r.mode).solo && r.humans.length >= 1) return reply(ack, { ok: false, error: 'This table is set up for Solo. Ask the host to switch to Classic.' });
       if (r.players.length >= MAX_PLAYERS) return reply(ack, { ok: false, error: `This table is full (${MAX_PLAYERS} players).` });
       if (r.players.some((x) => x.name.toLowerCase() === n.toLowerCase())) return reply(ack, { ok: false, error: `Someone is already called ${n}. Pick another name.` });
-      p = { id: token(), name: n, avatar: AVATARS.includes(avatar) ? avatar : AVATARS[0], socketId: null, connected: false, wins: 0, resumeToken: token() };
+      p = { id: token(), name: n, avatar: normaliseAvatar(avatar), socketId: null, connected: false, wins: 0, resumeToken: token() };
       r.players.push(p);
     }
     p.socketId = socket.id;
@@ -885,7 +887,7 @@ if (roomStore) {
     try {
       const r = new Room(io, null);
       Object.assign(r, data);
-      r.players = data.players.map((p) => ({ ...p, connected: !!p.isBot, socketId: null }));
+      r.players = data.players.map((p) => ({ ...p, avatar: normaliseAvatar(p.avatar), connected: !!p.isBot, socketId: null }));
       if (data.game) {
         const g = Object.create(LastCardGame.prototype);
         Object.assign(g, data.game);
