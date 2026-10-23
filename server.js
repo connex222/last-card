@@ -564,6 +564,7 @@ class Room {
       lobby: pub.players.map((x) => ({ id: x.id, name: x.name, avatar: x.avatar, connected: x.connected, isLeader: x.isLeader, wins: x.wins, isBot: x.isBot, points: x.points, out: x.out })),
       canStart: pub.phase !== 'playing' && pub.players.filter((x) => x.connected).length >= MIN_PLAYERS,
       canShout: inRound ? g.canShout(p.id) : false,
+      canCatch: !!(inRound && g.pendingShoutId && g.pendingShoutId !== p.id && !g.called[g.pendingShoutId] && Date.now() < g.catchDeadline),
       log: pub.log[pub.log.length - 1] || '',
       mode: pub.mode,
       modes: pub.modes,
@@ -828,6 +829,7 @@ io.on('connection', (socket) => {
   }, ack));
   socket.on('player:pass', (_d, ack) => act((p) => (room.game ? room.game.pass(p.id) : { ok: false }), ack));
   socket.on('player:shout', (_d, ack) => act((p) => (room.game ? room.game.shout(p.id) : { ok: false }), ack));
+  socket.on('player:catch', (_d, ack) => act((p) => (room.game ? room.game.catch(p.id) : { ok: false }), ack));
 
   // Phase 4: server-controlled, fixed-vocabulary reactions. No player-provided text reaches clients.
   let lastReactionAt = 0;
