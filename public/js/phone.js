@@ -804,7 +804,7 @@
     socket.emit('player:catch', {}, (result) => {
       catchButton.disabled = false;
       if (!result || !result.ok) { catchButton.hidden = true; toast('CATCH! window closed.', 'info', 1200); }
-      else { catchButton.hidden = true; buzz([90,40,90]); }
+      else { catchButton.hidden = true; buzz([90,40,90]); if (window.LastCardExperience) window.LastCardExperience.sound('catch'); toast('CATCH! They draw two cards.', 'success', 1800); }
     });
   });
 
