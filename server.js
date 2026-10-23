@@ -829,6 +829,20 @@ io.on('connection', (socket) => {
   socket.on('player:pass', (_d, ack) => act((p) => (room.game ? room.game.pass(p.id) : { ok: false }), ack));
   socket.on('player:shout', (_d, ack) => act((p) => (room.game ? room.game.shout(p.id) : { ok: false }), ack));
 
+  // Phase 4: server-controlled, fixed-vocabulary reactions. No player-provided text reaches clients.
+  let lastReactionAt = 0;
+  const REACTIONS = new Set(['😂', '😱', '🔥', '👏', '😈', '🙏']);
+  socket.on('player:reaction', ({ emoji } = {}, ack) => {
+    const p = me();
+    if (!room || !p || !room.game || room.phase !== 'playing') return reply(ack, { ok: false, error: 'Reactions are available during a round.' });
+    if (!REACTIONS.has(emoji)) return reply(ack, { ok: false, error: 'Unknown reaction.' });
+    const now = Date.now();
+    if (now - lastReactionAt < 2000) return reply(ack, { ok: false, error: 'Reaction cooling down.' });
+    lastReactionAt = now;
+    io.to(room.tvChannel).emit('player-reaction', { playerId: p.id, emoji });
+    reply(ack, { ok: true });
+  });
+
   socket.on('player:leave', (_d, ack) => {
     const p = me();
     if (!p || !room) return reply(ack, { ok: true });
