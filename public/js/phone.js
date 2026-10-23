@@ -12,7 +12,7 @@
   const socket = io({ transports: ['websocket', 'polling'] });
   let state = null;
   let session = loadSession();
-  let chosenAvatar = AvatarLib.isValid(session && session.avatar) ? session.avatar : AVATARS[(Math.random() * AVATARS.length) | 0];
+  let chosenAvatar = AvatarLib.isValid(session && session.avatar) ? AvatarLib.normalize(session.avatar) : AVATARS[(Math.random() * AVATARS.length) | 0];
   let busy = false;
   let wildCardId = null;
   let swapCardId = null;
@@ -96,14 +96,14 @@
         const invalid = /credentials expired|no game with that code/i.test(reason);
         if (payload.playerId && invalid) {
           clearSession();
-          chosenAvatar = AvatarLib.isValid(session && session.avatar) ? session.avatar : chosenAvatar;
+          chosenAvatar = AvatarLib.isValid(session && session.avatar) ? AvatarLib.normalize(session.avatar) : chosenAvatar;
         }
         showJoin(reason);
         return;
       }
       hideToast();
       saveSession({ code: res.code, playerId: res.playerId, resumeToken: res.resumeToken,
-        name: payload.name || (session && session.name), avatar: payload.avatar || (session && session.avatar) || chosenAvatar });
+        name: payload.name || (session && session.name), avatar: AvatarLib.normalize(payload.avatar || (session && session.avatar) || chosenAvatar) });
       if (location.pathname !== '/join') history.replaceState(null, '', '/join');
     });
   }
